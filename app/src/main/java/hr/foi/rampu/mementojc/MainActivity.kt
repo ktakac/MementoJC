@@ -1,17 +1,26 @@
 package hr.foi.rampu.mementojc
 
+import TaskCard
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -33,6 +42,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.dp
+import hr.foi.rampu.mementojc.entities.Task
+import hr.foi.rampu.mementojc.helpers.MockDataLoader
 
 @OptIn(ExperimentalFoundationApi::class)
 class MainActivity : ComponentActivity() {
@@ -58,16 +70,19 @@ class MainActivity : ComponentActivity() {
                 title = stringResource(R.string.tasks_pending),
                 unSelectedItem = ImageVector.vectorResource(id = R.drawable.outline_assignment_late_24),
                 selectedIcon = ImageVector.vectorResource(id = R.drawable.outline_assignment_late_24)
-            ),TabItem(
+            ), TabItem(
                 title = stringResource(R.string.tasks_completed),
                 unSelectedItem = ImageVector.vectorResource(id = R.drawable.outline_assignment_turned_in_24),
                 selectedIcon = ImageVector.vectorResource(id = R.drawable.baseline_assignment_turned_in_24)
-            ),TabItem(
+            ), TabItem(
                 title = stringResource(R.string.news),
                 unSelectedItem = ImageVector.vectorResource(id = R.drawable.outline_article_24),
                 selectedIcon = ImageVector.vectorResource(id = R.drawable.baseline_article_24)
             )
         )
+
+        val tasksPending = MockDataLoader.getDemoData()
+        val tasks = listOf(tasksPending, emptyList<Task>(), emptyList<Task>())
 
         val pagerState = rememberPagerState {
             tabItem.size
@@ -76,7 +91,7 @@ class MainActivity : ComponentActivity() {
             pagerState.animateScrollToPage(selectedTabIndex)
         }
         LaunchedEffect(key1 = pagerState.currentPage, pagerState.isScrollInProgress) {
-            if(!pagerState.isScrollInProgress)
+            if (!pagerState.isScrollInProgress)
                 selectedTabIndex = pagerState.currentPage
         }
 
@@ -103,20 +118,25 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-            HorizontalPager(state = pagerState, modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+            HorizontalPager(
+                state = pagerState, modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             ) { index ->
-                Box(modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center) {
-                        Text(text = tabItem[index].title)
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.TopEnd
+                ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(tasks[index]) { task ->
+                            TaskCard(task)
+                        }
+                    }
                 }
             }
+
+
         }
-        
-
-
-
     }
 }
 
